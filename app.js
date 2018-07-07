@@ -38,17 +38,8 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+
+
 module.exports = app;
 
 
-process.env.TOKEN = '63faee37962cac78da9a7993674d02fe945660986b0dd22f222a0beea76fac950047e52b04f86b1f0d501';
-
-const API = require('node-vk-bot-api');
-
-const bot = new API(process.env.TOKEN);
-
-bot.command('start', ({ reply }) => reply('This is start!'));
-bot.hears(/(car|tesla)/, ({ reply }) => reply('I love Tesla!'));
-bot.on(({ reply }) => reply('What?'));
-
-bot.listen();
