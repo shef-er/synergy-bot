@@ -86,9 +86,9 @@ bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
     }
 
     ctx.reply('Я - чат-бот, созданный для активных людей, чтобы помочь им реализовать себя. \n \
-    Напишите \n \
-    1⃣ или Хобби, чтобы чтобы найти единомышленников и пообщаться с ними.\n \
-    2⃣ или Целенаправленная деятельность, чтобы поучаствовать в проекте или инициативе, получить или предложить помощь, \
+    Напишите: \n \
+    1⃣ Хобби, чтобы чтобы найти единомышленников и пообщаться с ними.\n \
+    2⃣ Целенаправленная деятельность, чтобы поучаствовать в проекте или инициативе, получить или предложить помощь, \
     а также создать свою инициативу.')
 
     ctx.keyboard(kb);
@@ -100,11 +100,31 @@ bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
     }
 
     var db_compare = function(id) {
-        //db.run("SELECT level0, level1, level2 FROM users WHERE user_id = " + id + "ORDER BY level0, level1, level2")
 
-        let sql = "SELECT user_id FROM users WHERE user_id = " + id + " GROUP BY level0, level1, level2";
+        //db.get("SELECT level0, level1, level2 FROM users WHERE user_id = " + id + "ORDER BY level0, level1, level2")
+/*
+        let sql1 = "SELECT level0, level1, level2 FROM users WHERE user_id = " + id;
 
-        var matches = new Array();
+        console.log(sql1)
+
+        var cats = [];
+
+        db.get(sql1, [], (err, row) => {
+            if (err) {
+                throw err;
+            }
+
+            cats = row;
+        });
+
+        console.log(cats);
+
+
+        let sql = "SELECT DISTINCT user_id FROM users WHERE level0 = " + cats[0] + " AND level1 = " + cats[1] + " AND level2 = " + cats[2];
+
+        console.log(sql)
+
+        var matches = [];
 
         db.all(sql, [], (err, rows) => {
             if (err) {
@@ -117,6 +137,8 @@ bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
                 matches.push(row)
             });
         });
+*/
+        var matches = null;
 
         return matches;
     }
@@ -126,10 +148,12 @@ bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
         var result = "";
 
         console.dir("Matches", matches);
-        matches.forEach((row) => {
-            console.log(row);
-            result += "https://vk.com/id" + row.user_id + "\n"
-        });
+        if (matches) {
+            matches.forEach((row) => {
+                console.log(row);
+                result += "https://vk.com/id" + row.user_id + "\n"
+            });
+        }
 
         if(result === "")
             return "Совпадений по интересам не найдено!"
@@ -140,6 +164,14 @@ bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
 
     }
 
+
+    bot.hears(/^(2|Целенаправленная деятельность)$/, (ctx) => {
+
+        ctx.reply('Здесь пока нет категорий, заглядывайте позже ;)')
+
+    })
+
+
     bot.hears(/^(1|Хобби)$/, (ctx) => {
         //console.log(ctx)
 
@@ -148,14 +180,14 @@ bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
 
 
         ctx.reply('Выберите категорию:\n ' +
-            '1⃣ Популярные темы \n' +
-            '2⃣ Творчество \n' +
-            '3⃣ ИТ \n' +
-            '4⃣ Игры')
+            //'1⃣ Популярные темы \n' +
+            '1⃣ Творчество \n' +
+            '2⃣ ИТ \n' +
+            '3⃣ Игры')
 
-        bot.hears(/^(1-2|Творчество)$/, (ctx) => {
+        bot.hears(/^(1-1|Творчество)$/, (ctx) => {
 
-            var lvl1 = 2
+            var lvl1 = 1
             db_add(ctx.peer_id, 1, lvl1)
 
             ctx.reply('Выберите хобби:\n' +
@@ -164,7 +196,7 @@ bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
                 '3⃣ Фотография \n' +
                 'ВНИМАНИЕ! Выбор Вашего хобби автоматически добавит Вас в базу данных')
 
-            bot.hears(/^(1-2-1|Фотография)$/, (ctx) => {
+            bot.hears(/^(1-1-1|Кулинария)$/, (ctx) => {
                 var lvl2 = 1
                 db_add(ctx.peer_id, 2, lvl2)
 
@@ -174,7 +206,7 @@ bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
                 ctx.reply(handled)
             })
 
-            bot.hears(/^(1-2-2|Живопись)$/, (ctx) => {
+            bot.hears(/^(1-1-2|Живопись)$/, (ctx) => {
                 var lvl2 = 2
                 db_add(ctx.peer_id, 2, lvl2)
 
@@ -185,7 +217,7 @@ bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
                 ctx.reply(handled)
             })
 
-            bot.hears(/^(1-2-3|Фотография)$/, (ctx) => {
+            bot.hears(/^(1-1-3|Фотография)$/, (ctx) => {
                 var lvl2 = 3
                 db_add(ctx.peer_id, 2, lvl2)
 
@@ -196,6 +228,86 @@ bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
             })
 
         })
+
+        bot.hears(/^(1-2|ИТ)$/, (ctx) => {
+
+            var lvl1 = 2
+            db_add(ctx.peer_id, 1, lvl1)
+
+            ctx.reply('Выберите хобби:\n' +
+                '1⃣ Программирование \n' +
+                '2⃣ Радиотехника \n' +
+                //'3⃣ Фотография \n' +
+                'ВНИМАНИЕ! Выбор Вашего хобби автоматически добавит Вас в базу данных')
+
+            bot.hears(/^(1-2-1|Программирование)$/, (ctx) => {
+                var lvl2 = 1
+                db_add(ctx.peer_id, 2, lvl2)
+
+                var matches = db_compare(ctx.peer_id)
+                var handled = handle_matches(matches)
+
+                ctx.reply(handled)
+            })
+
+            bot.hears(/^(1-2-2|Радиотехника)$/, (ctx) => {
+                var lvl2 = 2
+                db_add(ctx.peer_id, 2, lvl2)
+
+                var matches = db_compare(ctx.peer_id)
+                //console.log(matches);
+                var handled = handle_matches(matches)
+
+                ctx.reply(handled)
+            })
+
+        })
+
+        bot.hears(/^(1-3|Игры)$/, (ctx) => {
+
+            var lvl1 = 3
+            db_add(ctx.peer_id, 1, lvl1)
+
+            ctx.reply('Выберите хобби:\n' +
+                '1⃣ Настольные игры \n' +
+                '2⃣ Спортивные игры \n' +
+                '3⃣ Консоль \n' +
+                'ВНИМАНИЕ! Выбор Вашего хобби автоматически добавит Вас в базу данных')
+
+            bot.hears(/^(1-3-1|Настольные игры)$/, (ctx) => {
+                var lvl2 = 1
+                db_add(ctx.peer_id, 2, lvl2)
+
+                var matches = db_compare(ctx.peer_id)
+                var handled = handle_matches(matches)
+
+                ctx.reply(handled)
+            })
+
+            bot.hears(/^(1-3-2|Спортивные игры)$/, (ctx) => {
+                var lvl2 = 2
+                db_add(ctx.peer_id, 2, lvl2)
+
+                var matches = db_compare(ctx.peer_id)
+                //console.log(matches);
+                var handled = handle_matches(matches)
+
+                ctx.reply(handled)
+            })
+
+            bot.hears(/^(1-3-3|Консоль)$/, (ctx) => {
+                var lvl2 = 3
+                db_add(ctx.peer_id, 2, lvl2)
+
+                var matches = db_compare(ctx.peer_id)
+                var handled = handle_matches(matches)
+
+                ctx.reply(handled)
+            })
+
+        })
+
+
 
     })
 
