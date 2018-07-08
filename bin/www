@@ -18,19 +18,20 @@ const bot = new API(process.env.TOKEN);
 
 // DB
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('../users.db', (err) => {
+var db = new sqlite3.Database('./db/users.db', (err) => {
     if (err) {
         console.error(err.message);
+    } else {
+        console.log('Connected to the users database.');
     }
-    console.log('Connected to the users database.');
 });
 
-//db.run("CREATE TABLE users(user_id UNIQUE, cats TEXT);");
-//db.run("UPDATE users SELECT cats = ? WHERE user_id = ?", "" , 2);
+//db.run("CREATE TABLE users (user_id UNIQUE, level0 TEXT, level1 TEXT, level2 TEXT, level3 TEXT, cats TEXT)");
+//db.run("UPDATE users SELECT cats = ? WHERE user_id = ?", 1 , ctx.peer_id);
 
 /*
 db.serialize(function() {
-    db.run("CREATE TABLE users (user_id TEXT, cats TEXT)");
+    db.run("CREATE TABLE users (user_id UNIQUE, lvl0 TEXT, lvl1 TEXT, lvl2 TEXT, lvl3 TEXT, cats TEXT)");
 
     var stmt = db.prepare("INSERT INTO cats VALUES (?)");
     for (var i = 0; i < 10; i++) {
@@ -45,11 +46,161 @@ db.serialize(function() {
 });
 */
 
-db.close();
 
+/*
 bot.command('start', ({ reply }) => reply('This is start!'));
 
-bot.hears(/(car|tesla)/, ({ reply }) => reply('I love Tesla!'));
-bot.on(({ reply }) => reply('What?'));
+bot.hears(/(start|старт|помощь|начать)/, ({ reply }) => reply('Я - чат-бот, созданный для активных людей,\
+чтобы помочь им реализовать себя. \n Напишите "1" или "хобби", чтобы чтобы найти единомышленников\
+и пообщаться с ними.\n Напишите "2" или "Целенаправленная деятельность", чтобы поучаствовать\
+в проекте или инициативе, получить или предложить помощь, а также создать свою инициативу.'));
+bot.on(({ reply }) => reply('Напишите "помощь", чтобы вернуться к началу.'));
+bot.hears(/^(1|Хобби)$/, ({ reply }) => reply('Выберите категорию:\n \
+1-1) Популярные темы \n 1-2) Творчество \n 1-3) ИТ \n \
+1-4) Игры'));
+bot.hears(/^(1-2|Творчество)$/, ({ reply }) => reply('Выберите хобби:\n \
+1-2-1) Кулинария \n 1-2-2) Живопись \n 1-2-3) Фотография \n \
+ВНИМАНИЕ! Выбор Вашего хобби автоматически добавит Вас в базу данных'));
+bot.hears(/^(1-2-2|Живопись)$/, ({ reply }) => reply('Поздравляю, всё работает'));
+*/
+
+bot.hears(/(start|старт|помощь|начать)/, (ctx) => {
+
+    var kb = {
+        "one_time": false,
+        "buttons": [
+            [{"action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"1\"}",
+                    "label": "Хобби"
+                },
+                "color": "default"
+            }, {
+                "action": {
+                    "type": "text",
+                    "payload": "{\"button\": \"2\"}",
+                    "label": "Целенаправленная деятельность"
+                },
+                "color": "default"
+            }]]
+    }
+
+    ctx.reply('Я - чат-бот, созданный для активных людей, чтобы помочь им реализовать себя. \n \
+    Напишите \n \
+    1⃣ или Хобби, чтобы чтобы найти единомышленников и пообщаться с ними.\n \
+    2⃣ или Целенаправленная деятельность, чтобы поучаствовать в проекте или инициативе, получить или предложить помощь, \
+    а также создать свою инициативу.')
+
+    ctx.keyboard(kb);
+
+    var db_add = function(id, level, value) {
+        db.run("INSERT OR IGNORE INTO users (user_id, level" + level + ") VALUES (" + id + "," + value + ")");
+
+        db.run("UPDATE users SET level" + level + " = " + value +" WHERE user_id = " + id);
+    }
+
+    var db_compare = function(id) {
+        //db.run("SELECT level0, level1, level2 FROM users WHERE user_id = " + id + "ORDER BY level0, level1, level2")
+
+        let sql = "SELECT user_id FROM users WHERE user_id = " + id + " GROUP BY level0, level1, level2";
+
+        var matches = new Array();
+
+        db.all(sql, [], (err, rows) => {
+            if (err) {
+                throw err;
+            }
+
+            console.log(rows)
+
+            rows.forEach((row) => {
+                matches.push(row)
+            });
+        });
+
+        return matches;
+    }
+
+    var handle_matches = function(matches) {
+
+        var result = "";
+
+        console.dir("Matches", matches);
+        matches.forEach((row) => {
+            console.log(row);
+            result += "https://vk.com/id" + row.user_id + "\n"
+        });
+
+        if(result === "")
+            return "Совпадений по интересам не найдено!"
+
+        result = "Ваши совпадения:\n" + result;
+
+        return result
+
+    }
+
+    bot.hears(/^(1|Хобби)$/, (ctx) => {
+        //console.log(ctx)
+
+        var lvl0 = 1
+        db_add(ctx.peer_id, 0, lvl0)
+
+
+        ctx.reply('Выберите категорию:\n ' +
+            '1⃣ Популярные темы \n' +
+            '2⃣ Творчество \n' +
+            '3⃣ ИТ \n' +
+            '4⃣ Игры')
+
+        bot.hears(/^(1-2|Творчество)$/, (ctx) => {
+
+            var lvl1 = 2
+            db_add(ctx.peer_id, 1, lvl1)
+
+            ctx.reply('Выберите хобби:\n' +
+                '1⃣ Кулинария \n' +
+                '2⃣ Живопись \n' +
+                '3⃣ Фотография \n' +
+                'ВНИМАНИЕ! Выбор Вашего хобби автоматически добавит Вас в базу данных')
+
+            bot.hears(/^(1-2-1|Фотография)$/, (ctx) => {
+                var lvl2 = 1
+                db_add(ctx.peer_id, 2, lvl2)
+
+                var matches = db_compare(ctx.peer_id)
+                var handled = handle_matches(matches)
+
+                ctx.reply(handled)
+            })
+
+            bot.hears(/^(1-2-2|Живопись)$/, (ctx) => {
+                var lvl2 = 2
+                db_add(ctx.peer_id, 2, lvl2)
+
+                var matches = db_compare(ctx.peer_id)
+                //console.log(matches);
+                var handled = handle_matches(matches)
+
+                ctx.reply(handled)
+            })
+
+            bot.hears(/^(1-2-3|Фотография)$/, (ctx) => {
+                var lvl2 = 3
+                db_add(ctx.peer_id, 2, lvl2)
+
+                var matches = db_compare(ctx.peer_id)
+                var handled = handle_matches(matches)
+
+                ctx.reply(handled)
+            })
+
+        })
+
+    })
+
+})
+
+bot.on(({ reply }) => reply('Напишите "помощь", чтобы вернуться к началу.'));
 
 bot.listen();

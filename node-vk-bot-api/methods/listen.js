@@ -32,9 +32,6 @@ module.exports = async function () {
       this.longPollParams = { ...this.longPollParams, ts: body.ts }
     }
 
-    //TODO: выцепить ID, 4 строка
-    //console.log(body.updates);
-
     if (body.updates && body.updates.length) {
       await Promise.all(body.updates.map(update => this.handler(update)))
     }

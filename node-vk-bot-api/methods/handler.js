@@ -5,6 +5,12 @@ module.exports = async function (update) {
     return
   }
 
+
+
+  // TODO: DEBUG
+  //console.log(update)
+  //console.log('\n\n')
+
   const [ , message_id, flags, peer_id, date, body, attachments ] = update
 
   if ((flags & 2) !== 0) {
@@ -46,6 +52,7 @@ module.exports = async function (update) {
 
   ctx.reply = (message, attachment, callback) => this.reply(ctx.peer_id, message, attachment, callback)
   ctx.sendMessage = (userId, message, attachment, callback) => this.reply(userId, message, attachment, callback)
+  ctx.keyboard = (keyboard) => this.keyboard(ctx.peer_id, keyboard)
 
   const { middlewares, commands, hears, on: reserved } = this.actions
 

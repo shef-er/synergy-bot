@@ -15,6 +15,7 @@ module.exports = class Bot {
     this.hears = require('./methods/hears').bind(this)
     this.on = require('./methods/on').bind(this)
     this.reply = require('./methods/reply').bind(this)
+    this.keyboard = require('./methods/keyboard').bind(this)
     this.handler = require('./methods/handler').bind(this)
     this.listen = require('./methods/listen').bind(this)
     this.loadParams = require('./methods/loadParams').bind(this)
@@ -43,6 +44,10 @@ module.exports = class Bot {
 
   reply (peerId, message, attachment, stickerId, callback) {
     return this.reply(peerId, message, attachment, stickerId, callback)
+  }
+
+  keyboard (peerId, keyboard, callback) {
+    return this.keyboard(peerId, keyboard, callback)
   }
 
   getLastMessage (update) {
